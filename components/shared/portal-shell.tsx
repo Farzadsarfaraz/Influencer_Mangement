@@ -37,11 +37,11 @@ export function PortalShell({
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="flex h-11 items-center gap-2 px-2">
-            <span className="shadow-glow bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md text-sm font-semibold">
+          <div className="flex h-11 items-center gap-2 overflow-hidden px-2">
+            <span className="shadow-glow bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-md text-sm font-semibold">
               O
             </span>
-            <div className="text-sm leading-tight group-data-[collapsible=icon]:hidden">
+            <div className="min-w-0 text-sm leading-tight whitespace-nowrap group-data-[collapsible=icon]:hidden">
               <div className="font-semibold">Octagon</div>
               <div className="text-muted-foreground">{portalLabel}</div>
             </div>
