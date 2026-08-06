@@ -37,8 +37,8 @@ export function PortalShell({
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-1.5">
-            <span className="shadow-glow flex size-7 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
+          <div className="flex h-11 items-center gap-2 px-2">
+            <span className="shadow-glow bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md text-sm font-semibold">
               O
             </span>
             <div className="text-sm leading-tight group-data-[collapsible=icon]:hidden">
@@ -49,7 +49,9 @@ export function PortalShell({
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel className="group-data-[collapsible=icon]:invisible group-data-[collapsible=icon]:mt-0">
+              Navigation
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <PortalNav navItems={navItems} />
             </SidebarGroupContent>
@@ -69,7 +71,9 @@ export function PortalShell({
             <UserMenu name={user.name} email={user.email} image={user.image} />
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">{children}</main>
+        <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
