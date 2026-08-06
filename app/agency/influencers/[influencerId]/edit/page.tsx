@@ -15,6 +15,7 @@ export default async function EditInfluencerPage(
       <h1 className="text-3xl font-semibold">Edit {influencer.displayName}</h1>
       <InfluencerForm
         influencerId={influencer.id}
+        avatarUrl={influencer.avatarUrl}
         defaultValues={{
           displayName: influencer.displayName,
           email: influencer.email ?? "",
