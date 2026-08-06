@@ -41,7 +41,7 @@ export function PortalShell({
             <span className="shadow-glow flex size-7 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
               O
             </span>
-            <div className="text-sm leading-tight">
+            <div className="text-sm leading-tight group-data-[collapsible=icon]:hidden">
               <div className="font-semibold">Octagon</div>
               <div className="text-muted-foreground">{portalLabel}</div>
             </div>
