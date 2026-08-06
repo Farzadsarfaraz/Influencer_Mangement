@@ -209,6 +209,7 @@ model Influencer {
   phone       String?
   bio         String?           @db.Text
   location    String?
+  avatarUrl   String?
   tier        InfluencerTier?
   status      InfluencerStatus  @default(PROSPECT)
   createdAt   DateTime          @default(now())

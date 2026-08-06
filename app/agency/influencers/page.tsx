@@ -78,7 +78,7 @@ export default async function InfluencersPage(
                   >
                     <UserAvatar
                       name={influencer.displayName}
-                      image={null}
+                      image={influencer.avatarUrl}
                       size="sm"
                     />
                     {influencer.displayName}

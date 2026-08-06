@@ -70,7 +70,7 @@ export default async function CampaignAssignmentsPage(
                   >
                     <UserAvatar
                       name={assignment.influencer.displayName}
-                      image={null}
+                      image={assignment.influencer.avatarUrl}
                       size="sm"
                     />
                     {assignment.influencer.displayName}

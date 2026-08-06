@@ -57,16 +57,22 @@ export async function getCampaignMetricsByInfluencer(campaignId: string) {
   });
 
   const influencers = await db.influencer.findMany({
-    where: { id: { in: rows.map((r) => r.influencerId).filter((id): id is string => !!id) } },
-    select: { id: true, displayName: true },
+    where: {
+      id: {
+        in: rows.map((r) => r.influencerId).filter((id): id is string => !!id),
+      },
+    },
+    select: { id: true, displayName: true, avatarUrl: true },
   });
-  const byId = new Map(influencers.map((i) => [i.id, i.displayName]));
+  const byId = new Map(influencers.map((i) => [i.id, i]));
 
   return rows
     .filter((row) => row.influencerId)
     .map((row) => ({
       influencerId: row.influencerId as string,
-      displayName: byId.get(row.influencerId as string) ?? "Unknown",
+      displayName:
+        byId.get(row.influencerId as string)?.displayName ?? "Unknown",
+      avatarUrl: byId.get(row.influencerId as string)?.avatarUrl ?? null,
       reach: row._sum.reach ?? 0,
       impressions: row._sum.impressions ?? 0,
       engagements: row._sum.engagements ?? 0,

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { AddInfluencerNoteForm } from "@/components/agency/add-influencer-note-form";
 import { AddSocialAccountDialog } from "@/components/agency/add-social-account-dialog";
+import { InfluencerAvatarUploader } from "@/components/agency/influencer-avatar-uploader";
 import { InviteInfluencerButton } from "@/components/agency/invite-influencer-button";
 import { RemoveSocialAccountButton } from "@/components/agency/social-account-row-actions";
 import { ActivityTimeline } from "@/components/shared/activity-timeline";
@@ -30,7 +31,11 @@ export default async function InfluencerDetailPage(
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <UserAvatar name={influencer.displayName} image={null} size="lg" />
+            <InfluencerAvatarUploader
+              influencerId={influencer.id}
+              displayName={influencer.displayName}
+              avatarUrl={influencer.avatarUrl}
+            />
             <h1 className="text-3xl font-semibold">{influencer.displayName}</h1>
             <Badge variant="secondary">{influencer.status}</Badge>
             {influencer.tier ? (

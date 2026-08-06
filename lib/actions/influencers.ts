@@ -8,9 +8,11 @@ import { db } from "@/lib/db";
 import type { ActionResult } from "@/lib/actions/brands";
 import { issueInviteToken } from "@/lib/actions/invite";
 import {
+  influencerAvatarSchema,
   influencerNoteSchema,
   influencerSchema,
   socialAccountSchema,
+  type InfluencerAvatarInput,
   type InfluencerInput,
   type InfluencerNoteInput,
   type SocialAccountInput,
@@ -34,7 +36,10 @@ export async function createInfluencerAction(
   const actor = await requireRole(CAMPAIGN_MANAGER_ROLES);
   const parsed = influencerSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
   }
 
   const tagNames = parseTags(parsed.data.tags);
@@ -79,7 +84,10 @@ export async function updateInfluencerAction(
   await requireRole(CAMPAIGN_MANAGER_ROLES);
   const parsed = influencerSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
   }
 
   const tagNames = parseTags(parsed.data.tags);
@@ -108,13 +116,38 @@ export async function updateInfluencerAction(
   return { ok: true, data: undefined };
 }
 
+export async function updateInfluencerAvatarAction(
+  input: InfluencerAvatarInput,
+): Promise<ActionResult> {
+  await requireRole(CAMPAIGN_MANAGER_ROLES);
+  const parsed = influencerAvatarSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
+  }
+
+  await db.influencer.update({
+    where: { id: parsed.data.influencerId },
+    data: { avatarUrl: parsed.data.avatarUrl },
+  });
+
+  revalidatePath(`/agency/influencers/${parsed.data.influencerId}`);
+  revalidatePath("/agency/influencers");
+  return { ok: true, data: undefined };
+}
+
 export async function addSocialAccountAction(
   input: SocialAccountInput,
 ): Promise<ActionResult> {
   await requireRole(CAMPAIGN_MANAGER_ROLES);
   const parsed = socialAccountSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
   }
 
   await db.influencerSocialAccount.create({
@@ -148,7 +181,10 @@ export async function addInfluencerNoteAction(
   const actor = await requireRole(AGENCY_ROLES);
   const parsed = influencerNoteSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
   }
 
   await db.influencerNote.create({
@@ -172,14 +208,18 @@ export async function inviteInfluencerToPortalAction(
     where: { id: influencerId },
   });
   if (!influencer) return { ok: false, error: "Influencer not found." };
-  if (influencer.userId) return { ok: false, error: "Already has portal access." };
+  if (influencer.userId)
+    return { ok: false, error: "Already has portal access." };
   if (!influencer.email) {
     return { ok: false, error: "Add an email address before inviting." };
   }
 
   let user = await db.user.findUnique({ where: { email: influencer.email } });
   if (user && user.role !== "INFLUENCER") {
-    return { ok: false, error: "This email belongs to a non-influencer account." };
+    return {
+      ok: false,
+      error: "This email belongs to a non-influencer account.",
+    };
   }
 
   if (!user) {

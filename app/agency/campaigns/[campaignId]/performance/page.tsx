@@ -110,7 +110,7 @@ export default async function CampaignPerformancePage(
                     <div className="flex items-center gap-2.5">
                       <UserAvatar
                         name={row.displayName}
-                        image={null}
+                        image={row.avatarUrl}
                         size="sm"
                       />
                       {row.displayName}

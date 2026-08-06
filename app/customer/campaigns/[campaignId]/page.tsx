@@ -124,7 +124,7 @@ export default async function CustomerCampaignDetailPage(
             >
               <UserAvatar
                 name={submission.deliverable.assignment.influencer.displayName}
-                image={null}
+                image={submission.deliverable.assignment.influencer.avatarUrl}
                 size="sm"
                 className="mt-0.5 shrink-0"
               />

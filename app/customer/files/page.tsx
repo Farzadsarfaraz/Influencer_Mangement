@@ -51,7 +51,9 @@ export default async function CustomerFilesPage() {
                       name={
                         submission.deliverable.assignment.influencer.displayName
                       }
-                      image={null}
+                      image={
+                        submission.deliverable.assignment.influencer.avatarUrl
+                      }
                       size="sm"
                     />
                     {submission.deliverable.assignment.influencer.displayName}

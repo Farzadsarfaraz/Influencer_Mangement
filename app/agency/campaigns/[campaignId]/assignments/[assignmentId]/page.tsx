@@ -44,7 +44,7 @@ export default async function AssignmentDetailPage(
         <div className="flex items-start gap-3">
           <UserAvatar
             name={assignment.influencer.displayName}
-            image={null}
+            image={assignment.influencer.avatarUrl}
             size="lg"
           />
           <div>

@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const influencerTiers = ["NANO", "MICRO", "MID", "MACRO", "MEGA"] as const;
+export const influencerTiers = [
+  "NANO",
+  "MICRO",
+  "MID",
+  "MACRO",
+  "MEGA",
+] as const;
 export const influencerStatuses = [
   "PROSPECT",
   "ACTIVE",
@@ -49,3 +55,10 @@ export const influencerNoteSchema = z.object({
 });
 
 export type InfluencerNoteInput = z.infer<typeof influencerNoteSchema>;
+
+export const influencerAvatarSchema = z.object({
+  influencerId: z.string().min(1),
+  avatarUrl: z.url(),
+});
+
+export type InfluencerAvatarInput = z.infer<typeof influencerAvatarSchema>;
