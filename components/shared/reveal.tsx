@@ -39,16 +39,25 @@ export function Reveal({
         // the opacity:0 the first (aborted) run just set, animating 0->0
         // and leaving the content permanently invisible. fromTo pins both
         // ends explicitly so remounting can't corrupt the target state.
+        //
+        // transition: "none" — buttons (and other shadcn components) ship
+        // with their own `transition-all` for hover/press feedback. Without
+        // this, that CSS transition also tries to ease every opacity/
+        // transform frame GSAP writes, stacking a second easing curve on
+        // top of GSAP's and making buttons visibly lag/spring compared to
+        // plain elements like <input> that have no competing transition.
+        // clearProps hands the property back once the intro is done, so
+        // hover/press transitions work normally afterward.
         gsap.fromTo(
           targets,
-          { opacity: 0, y },
+          { opacity: 0, y, transition: "none" },
           {
             opacity: 1,
             y: 0,
             duration: 0.5,
             ease: "power2.out",
             stagger,
-            clearProps: "opacity,transform",
+            clearProps: "opacity,transform,transition",
           },
         );
       });

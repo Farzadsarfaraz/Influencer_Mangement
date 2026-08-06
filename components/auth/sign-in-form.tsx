@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
+import { toast } from "sonner";
 
 import { signInAction } from "@/lib/actions/auth";
 import { Reveal } from "@/components/shared/reveal";
@@ -23,6 +24,12 @@ function SubmitButton() {
 export function SignInForm() {
   const [state, formAction] = useActionState(signInAction, undefined);
   const router = useRouter();
+
+  useEffect(() => {
+    if (state?.status === "error") {
+      toast.error("Sign-in failed", { description: state.message });
+    }
+  }, [state]);
 
   if (state?.status === "success") {
     return <SignInSplash onFinished={() => router.push(state.redirectTo)} />;
@@ -51,9 +58,6 @@ export function SignInForm() {
             required
           />
         </div>
-        {state?.status === "error" ? (
-          <p className="text-destructive text-sm">{state.message}</p>
-        ) : null}
         <SubmitButton />
       </Reveal>
     </form>
