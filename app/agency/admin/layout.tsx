@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AdminBackground } from "@/components/agency/admin-background";
 import { ADMIN_ROLES } from "@/lib/auth/permissions";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -20,7 +21,8 @@ export default async function AdminLayout({
   if (!user || !ADMIN_ROLES.includes(user.role)) redirect("/agency/dashboard");
 
   return (
-    <div className="space-y-6">
+    <div className="relative isolate min-h-[calc(100vh-8rem)] space-y-6">
+      <AdminBackground />
       <div className="flex gap-4 border-b pb-2 text-sm">
         {ADMIN_NAV.map((item) => (
           <Link
