@@ -31,11 +31,15 @@ function randomInt(min: number, max: number) {
 async function main() {
   const passwordHash = await argon2.hash(SEED_PASSWORD);
 
+  // Free-to-use stock face photos, purpose-built for exactly this — mock
+  // data that needs to look like real people instead of blank initials.
+  const avatar = (n: number) => `https://i.pravatar.cc/300?img=${n}`;
+
   // ── Agency staff ──────────────────────────────────────────────────────
   const [ava, marco, priya, noah] = await Promise.all([
     db.user.upsert({
       where: { email: "farzad@octagon.dev" },
-      update: {},
+      update: { image: avatar(1) },
       create: {
         name: "Ava Admin",
         email: "farzad@octagon.dev",
@@ -43,11 +47,12 @@ async function main() {
         role: "AGENCY_ADMIN",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(1),
       },
     }),
     db.user.upsert({
       where: { email: "manager@octagon.dev" },
-      update: {},
+      update: { image: avatar(2) },
       create: {
         name: "Marco Manager",
         email: "manager@octagon.dev",
@@ -55,11 +60,12 @@ async function main() {
         role: "AGENCY_MANAGER",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(2),
       },
     }),
     db.user.upsert({
       where: { email: "priya@octagon.dev" },
-      update: {},
+      update: { image: avatar(3) },
       create: {
         name: "Priya Patel",
         email: "priya@octagon.dev",
@@ -67,11 +73,12 @@ async function main() {
         role: "AGENCY_MANAGER",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(3),
       },
     }),
     db.user.upsert({
       where: { email: "noah@octagon.dev" },
-      update: {},
+      update: { image: avatar(4) },
       create: {
         name: "Noah Kim",
         email: "noah@octagon.dev",
@@ -79,6 +86,7 @@ async function main() {
         role: "AGENCY_MEMBER",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(4),
       },
     }),
   ]);
@@ -117,7 +125,7 @@ async function main() {
   const [cara, derek, naomi, owen, sasha] = await Promise.all([
     db.user.upsert({
       where: { email: "client@brightpeak.dev" },
-      update: {},
+      update: { image: avatar(5) },
       create: {
         name: "Cara Client",
         email: "client@brightpeak.dev",
@@ -125,11 +133,12 @@ async function main() {
         role: "CLIENT_ADMIN",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(5),
       },
     }),
     db.user.upsert({
       where: { email: "derek@brightpeak.dev" },
-      update: {},
+      update: { image: avatar(6) },
       create: {
         name: "Derek Diaz",
         email: "derek@brightpeak.dev",
@@ -137,11 +146,12 @@ async function main() {
         role: "CLIENT_VIEWER",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(6),
       },
     }),
     db.user.upsert({
       where: { email: "naomi@lumenbeauty.dev" },
-      update: {},
+      update: { image: avatar(7) },
       create: {
         name: "Naomi Lang",
         email: "naomi@lumenbeauty.dev",
@@ -149,22 +159,24 @@ async function main() {
         role: "CLIENT_ADMIN",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(7),
       },
     }),
     db.user.upsert({
       where: { email: "owen@fizzsports.dev" },
-      update: {},
+      update: { image: avatar(8) },
       create: {
         name: "Owen Baxter",
         email: "owen@fizzsports.dev",
         passwordHash,
         role: "CLIENT_ADMIN",
         status: "INVITED",
+        image: avatar(8),
       },
     }),
     db.user.upsert({
       where: { email: "sasha@novahome.dev" },
-      update: {},
+      update: { image: avatar(9) },
       create: {
         name: "Sasha Romero",
         email: "sasha@novahome.dev",
@@ -172,6 +184,7 @@ async function main() {
         role: "CLIENT_ADMIN",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(9),
       },
     }),
   ]);
@@ -241,7 +254,14 @@ async function main() {
   });
 
   // ── Tags ───────────────────────────────────────────────────────────────
-  const tagNames = ["Sustainability", "Fitness", "Beauty", "Gaming", "Parenting", "Travel"];
+  const tagNames = [
+    "Sustainability",
+    "Fitness",
+    "Beauty",
+    "Gaming",
+    "Parenting",
+    "Travel",
+  ];
   const tags = Object.fromEntries(
     await Promise.all(
       tagNames.map(async (name) => [
@@ -255,7 +275,7 @@ async function main() {
   const [irisUser, zaraUser] = await Promise.all([
     db.user.upsert({
       where: { email: "influencer@octagon.dev" },
-      update: {},
+      update: { image: avatar(10) },
       create: {
         name: "Iris Influencer",
         email: "influencer@octagon.dev",
@@ -263,11 +283,12 @@ async function main() {
         role: "INFLUENCER",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(10),
       },
     }),
     db.user.upsert({
       where: { email: "zara@octagon.dev" },
-      update: {},
+      update: { image: avatar(11) },
       create: {
         name: "Zara Osei",
         email: "zara@octagon.dev",
@@ -275,13 +296,14 @@ async function main() {
         role: "INFLUENCER",
         status: "ACTIVE",
         emailVerified: new Date(),
+        image: avatar(11),
       },
     }),
   ]);
 
   const iris = await db.influencer.upsert({
     where: { userId: irisUser.id },
-    update: {},
+    update: { avatarUrl: avatar(10) },
     create: {
       userId: irisUser.id,
       createdById: ava.id,
@@ -291,7 +313,10 @@ async function main() {
       bio: "Trail runner and gear reviewer sharing weekend adventures.",
       tier: "MICRO",
       status: "ACTIVE",
-      tags: { connect: [{ id: tags.Sustainability.id }, { id: tags.Travel.id }] },
+      avatarUrl: avatar(10),
+      tags: {
+        connect: [{ id: tags.Sustainability.id }, { id: tags.Travel.id }],
+      },
       socialAccounts: {
         create: [
           {
@@ -307,7 +332,7 @@ async function main() {
 
   const zara = await db.influencer.upsert({
     where: { userId: zaraUser.id },
-    update: {},
+    update: { avatarUrl: avatar(11) },
     create: {
       userId: zaraUser.id,
       createdById: ava.id,
@@ -317,6 +342,7 @@ async function main() {
       bio: "Beauty and lifestyle creator with a focus on clean skincare.",
       tier: "MACRO",
       status: "ACTIVE",
+      avatarUrl: avatar(11),
       tags: { connect: [{ id: tags.Beauty.id }] },
       socialAccounts: {
         create: [
@@ -346,7 +372,15 @@ async function main() {
       tier: "NANO" as const,
       status: "PROSPECT" as const,
       tags: ["Fitness"],
-      socials: [{ platform: "TIKTOK" as const, handle: "@leo.moves", followerCount: 8200, engagementRate: 6.1 }],
+      avatarUrl: avatar(12),
+      socials: [
+        {
+          platform: "TIKTOK" as const,
+          handle: "@leo.moves",
+          followerCount: 8200,
+          engagementRate: 6.1,
+        },
+      ],
     },
     {
       key: "kenji",
@@ -356,7 +390,15 @@ async function main() {
       tier: "MID" as const,
       status: "ACTIVE" as const,
       tags: ["Fitness", "Gaming"],
-      socials: [{ platform: "YOUTUBE" as const, handle: "KenjiFit", followerCount: 156000, engagementRate: 3.2 }],
+      avatarUrl: avatar(13),
+      socials: [
+        {
+          platform: "YOUTUBE" as const,
+          handle: "KenjiFit",
+          followerCount: 156000,
+          engagementRate: 3.2,
+        },
+      ],
     },
     {
       key: "meera",
@@ -366,7 +408,15 @@ async function main() {
       tier: "MID" as const,
       status: "ACTIVE" as const,
       tags: ["Beauty", "Parenting"],
-      socials: [{ platform: "INSTAGRAM" as const, handle: "@meera.k", followerCount: 121000, engagementRate: 3.6 }],
+      avatarUrl: avatar(14),
+      socials: [
+        {
+          platform: "INSTAGRAM" as const,
+          handle: "@meera.k",
+          followerCount: 121000,
+          engagementRate: 3.6,
+        },
+      ],
     },
     {
       key: "diego",
@@ -376,7 +426,15 @@ async function main() {
       tier: "MICRO" as const,
       status: "ACTIVE" as const,
       tags: ["Travel"],
-      socials: [{ platform: "TIKTOK" as const, handle: "@diego.travels", followerCount: 61000, engagementRate: 5.4 }],
+      avatarUrl: avatar(15),
+      socials: [
+        {
+          platform: "TIKTOK" as const,
+          handle: "@diego.travels",
+          followerCount: 61000,
+          engagementRate: 5.4,
+        },
+      ],
     },
     {
       key: "amara",
@@ -386,7 +444,15 @@ async function main() {
       tier: "MACRO" as const,
       status: "DO_NOT_USE" as const,
       tags: ["Beauty"],
-      socials: [{ platform: "INSTAGRAM" as const, handle: "@amara.okafor", followerCount: 275000, engagementRate: 1.9 }],
+      avatarUrl: avatar(16),
+      socials: [
+        {
+          platform: "INSTAGRAM" as const,
+          handle: "@amara.okafor",
+          followerCount: 275000,
+          engagementRate: 1.9,
+        },
+      ],
     },
     {
       key: "ben",
@@ -396,7 +462,15 @@ async function main() {
       tier: "NANO" as const,
       status: "PROSPECT" as const,
       tags: ["Gaming"],
-      socials: [{ platform: "TWITCH" as const, handle: "bensullivan", followerCount: 4300, engagementRate: 7.2 }],
+      avatarUrl: avatar(17),
+      socials: [
+        {
+          platform: "TWITCH" as const,
+          handle: "bensullivan",
+          followerCount: 4300,
+          engagementRate: 7.2,
+        },
+      ],
     },
     {
       key: "ling",
@@ -406,34 +480,54 @@ async function main() {
       tier: "MEGA" as const,
       status: "ACTIVE" as const,
       tags: ["Sustainability", "Travel"],
+      avatarUrl: avatar(18),
       socials: [
-        { platform: "YOUTUBE" as const, handle: "LingZhaoTravels", followerCount: 1200000, engagementRate: 2.1 },
-        { platform: "INSTAGRAM" as const, handle: "@ling.zhao", followerCount: 540000, engagementRate: 1.8 },
+        {
+          platform: "YOUTUBE" as const,
+          handle: "LingZhaoTravels",
+          followerCount: 1200000,
+          engagementRate: 2.1,
+        },
+        {
+          platform: "INSTAGRAM" as const,
+          handle: "@ling.zhao",
+          followerCount: 540000,
+          engagementRate: 1.8,
+        },
       ],
     },
   ];
 
-  const influencers: Record<string, Awaited<ReturnType<typeof db.influencer.create>>> = {
+  const influencers: Record<
+    string,
+    Awaited<ReturnType<typeof db.influencer.create>>
+  > = {
     iris,
     zara,
   };
 
   for (const spec of otherInfluencerSpecs) {
-    const existing = await db.influencer.findFirst({ where: { email: spec.email } });
-    const influencer =
-      existing ??
-      (await db.influencer.create({
-        data: {
-          createdById: ava.id,
-          displayName: spec.displayName,
-          email: spec.email,
-          location: spec.location,
-          tier: spec.tier,
-          status: spec.status,
-          tags: { connect: spec.tags.map((name) => ({ id: tags[name].id })) },
-          socialAccounts: { create: spec.socials },
-        },
-      }));
+    const existing = await db.influencer.findFirst({
+      where: { email: spec.email },
+    });
+    const influencer = existing
+      ? await db.influencer.update({
+          where: { id: existing.id },
+          data: { avatarUrl: spec.avatarUrl },
+        })
+      : await db.influencer.create({
+          data: {
+            createdById: ava.id,
+            displayName: spec.displayName,
+            email: spec.email,
+            location: spec.location,
+            tier: spec.tier,
+            status: spec.status,
+            avatarUrl: spec.avatarUrl,
+            tags: { connect: spec.tags.map((name) => ({ id: tags[name].id })) },
+            socialAccounts: { create: spec.socials },
+          },
+        });
     influencers[spec.key] = influencer;
   }
 
@@ -522,7 +616,8 @@ async function main() {
     ownerId: priya.id,
     name: "Lumen Glow Up Challenge",
     objective: "30-day skincare challenge with before/after content.",
-    description: "Creators document a 30-day routine using the new Lumen Glow serum line.",
+    description:
+      "Creators document a 30-day routine using the new Lumen Glow serum line.",
     status: "ACTIVE",
     budget: 40000,
     startDate: daysAgo(15),
@@ -661,34 +756,43 @@ async function main() {
     });
   }
 
-  const irisSummerAssignment = await upsertAssignment("seed-assign-iris-summer", {
-    campaignId: summerLaunch.id,
-    flightId: launchWeek.id,
-    influencerId: iris.id,
-    createdById: marco.id,
-    fee: 1800,
-    status: "IN_REVIEW",
-    dueDate: daysFromNow(3),
-    respondedAt: daysAgo(9),
-  });
+  const irisSummerAssignment = await upsertAssignment(
+    "seed-assign-iris-summer",
+    {
+      campaignId: summerLaunch.id,
+      flightId: launchWeek.id,
+      influencerId: iris.id,
+      createdById: marco.id,
+      fee: 1800,
+      status: "IN_REVIEW",
+      dueDate: daysFromNow(3),
+      respondedAt: daysAgo(9),
+    },
+  );
 
-  const zaraGlowUpAssignment = await upsertAssignment("seed-assign-zara-glowup", {
-    campaignId: glowUp.id,
-    influencerId: zara.id,
-    createdById: priya.id,
-    fee: 6500,
-    status: "APPROVED",
-    dueDate: daysAgo(2),
-  });
+  const zaraGlowUpAssignment = await upsertAssignment(
+    "seed-assign-zara-glowup",
+    {
+      campaignId: glowUp.id,
+      influencerId: zara.id,
+      createdById: priya.id,
+      fee: 6500,
+      status: "APPROVED",
+      dueDate: daysAgo(2),
+    },
+  );
 
-  const meeraGlowUpAssignment = await upsertAssignment("seed-assign-meera-glowup", {
-    campaignId: glowUp.id,
-    influencerId: influencers.meera.id,
-    createdById: priya.id,
-    fee: 3200,
-    status: "REVISION_REQUESTED",
-    dueDate: daysFromNow(1),
-  });
+  const meeraGlowUpAssignment = await upsertAssignment(
+    "seed-assign-meera-glowup",
+    {
+      campaignId: glowUp.id,
+      influencerId: influencers.meera.id,
+      createdById: priya.id,
+      fee: 3200,
+      status: "REVISION_REQUESTED",
+      dueDate: daysFromNow(1),
+    },
+  );
 
   const kenjiFizzAssignment = await upsertAssignment("seed-assign-kenji-fizz", {
     campaignId: ambassadorProgram.id,
@@ -747,17 +851,28 @@ async function main() {
       platform: "INSTAGRAM" | "TIKTOK" | "YOUTUBE";
       contentType: "POST" | "REEL" | "STORY" | "VIDEO";
       dueDate: Date;
-      status: "PENDING" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "PUBLISHED" | "REJECTED";
+      status:
+        | "PENDING"
+        | "IN_PROGRESS"
+        | "SUBMITTED"
+        | "APPROVED"
+        | "PUBLISHED"
+        | "REJECTED";
     },
   ) {
-    return db.deliverable.upsert({ where: { id }, update: {}, create: { id, ...spec } });
+    return db.deliverable.upsert({
+      where: { id },
+      update: {},
+      create: { id, ...spec },
+    });
   }
 
   // Iris / BrightPeak: awaiting client-side approval.
   const irisReel = await upsertDeliverable("seed-deliverable-iris-reel", {
     assignmentId: irisSummerAssignment.id,
     title: "Launch Day Trail Reel",
-    description: "60s Reel featuring the new trail running shoes on a sunrise hike.",
+    description:
+      "60s Reel featuring the new trail running shoes on a sunrise hike.",
     platform: "INSTAGRAM",
     contentType: "REEL",
     dueDate: daysFromNow(3),
@@ -765,7 +880,9 @@ async function main() {
   });
 
   const irisSubmission = await db.contentSubmission.upsert({
-    where: { deliverableId_version: { deliverableId: irisReel.id, version: 1 } },
+    where: {
+      deliverableId_version: { deliverableId: irisReel.id, version: 1 },
+    },
     update: {},
     create: {
       deliverableId: irisReel.id,
@@ -836,7 +953,8 @@ async function main() {
   const zaraPost = await upsertDeliverable("seed-deliverable-zara-post", {
     assignmentId: zaraGlowUpAssignment.id,
     title: "Day 30 Glow Up Reveal",
-    description: "Before/after carousel post for the final day of the challenge.",
+    description:
+      "Before/after carousel post for the final day of the challenge.",
     platform: "INSTAGRAM",
     contentType: "POST",
     dueDate: daysAgo(2),
@@ -844,7 +962,9 @@ async function main() {
   });
 
   const zaraSubmission = await db.contentSubmission.upsert({
-    where: { deliverableId_version: { deliverableId: zaraPost.id, version: 1 } },
+    where: {
+      deliverableId_version: { deliverableId: zaraPost.id, version: 1 },
+    },
     update: {},
     create: {
       deliverableId: zaraPost.id,
@@ -911,7 +1031,9 @@ async function main() {
   });
 
   const meeraV1 = await db.contentSubmission.upsert({
-    where: { deliverableId_version: { deliverableId: meeraStory.id, version: 1 } },
+    where: {
+      deliverableId_version: { deliverableId: meeraStory.id, version: 1 },
+    },
     update: {},
     create: {
       deliverableId: meeraStory.id,
@@ -930,7 +1052,8 @@ async function main() {
       stage: "INTERNAL",
       reviewerId: priya.id,
       decision: "CHANGES_REQUESTED",
-      comment: "Please swap the product close-up for one that shows the new packaging.",
+      comment:
+        "Please swap the product close-up for one that shows the new packaging.",
       decidedAt: daysAgo(1),
     },
   });
@@ -943,7 +1066,9 @@ async function main() {
   });
 
   const meeraV2 = await db.contentSubmission.upsert({
-    where: { deliverableId_version: { deliverableId: meeraStory.id, version: 2 } },
+    where: {
+      deliverableId_version: { deliverableId: meeraStory.id, version: 2 },
+    },
     update: {},
     create: {
       deliverableId: meeraStory.id,
@@ -1004,13 +1129,20 @@ async function main() {
     for (let i = 13; i >= 0; i--) {
       reachBase += randomInt(200, 1500);
       const impressions = Math.round(reachBase * (1.4 + Math.random() * 0.3));
-      const engagements = Math.round(impressions * (0.03 + Math.random() * 0.02));
+      const engagements = Math.round(
+        impressions * (0.03 + Math.random() * 0.02),
+      );
       const views = Math.round(impressions * (0.5 + Math.random() * 0.2));
       const clicks = Math.round(engagements * (0.1 + Math.random() * 0.1));
       const date = daysAgo(i);
 
       const existing = await db.campaignMetricSnapshot.findFirst({
-        where: { campaignId: campaign.id, influencerId: null, platform: null, date },
+        where: {
+          campaignId: campaign.id,
+          influencerId: null,
+          platform: null,
+          date,
+        },
         select: { id: true },
       });
       if (existing) continue;
@@ -1073,7 +1205,10 @@ async function main() {
   // ── Messaging ──────────────────────────────────────────────────────────
   const irisConversation = await db.conversation.upsert({
     where: {
-      campaignId_influencerId: { campaignId: summerLaunch.id, influencerId: iris.id },
+      campaignId_influencerId: {
+        campaignId: summerLaunch.id,
+        influencerId: iris.id,
+      },
     },
     update: {},
     create: { campaignId: summerLaunch.id, influencerId: iris.id },
@@ -1139,7 +1274,10 @@ async function main() {
     skipDuplicates: true,
   });
 
-  console.log("Seed complete. All demo users share the password:", SEED_PASSWORD);
+  console.log(
+    "Seed complete. All demo users share the password:",
+    SEED_PASSWORD,
+  );
   console.log({
     agency: [ava.email, marco.email, priya.email, noah.email],
     clients: [cara.email, derek.email, naomi.email, owen.email, sasha.email],
