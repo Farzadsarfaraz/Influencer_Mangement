@@ -1,5 +1,6 @@
 import { NotificationBell } from "@/components/shared/notification-bell";
 import { PortalNav } from "@/components/shared/portal-nav";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { UserMenu } from "@/components/shared/user-menu";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -63,6 +64,7 @@ export function PortalShell({
             <span className="text-sm font-medium">{portalLabel}</span>
           </div>
           <div className="flex items-center gap-1">
+            <ThemeToggle />
             <NotificationBell />
             <UserMenu name={user.name} email={user.email} image={user.image} />
           </div>

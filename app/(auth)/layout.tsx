@@ -2,6 +2,7 @@ import { CheckCircle2 } from "lucide-react";
 
 import { FloatingOrbs } from "@/components/shared/floating-orbs";
 import { MorphingWordmark } from "@/components/shared/morphing-wordmark";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 const HIGHLIGHTS = [
   "Brief to payout in one workspace",
@@ -16,6 +17,10 @@ export default function AuthLayout({
 }) {
   return (
     <div className="grid min-h-svh md:grid-cols-2">
+      <div className="fixed top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
       <div className="bg-primary text-primary-foreground relative hidden overflow-hidden md:flex md:flex-col md:justify-between md:p-8 lg:p-12">
         <FloatingOrbs />
         <MorphingWordmark />
