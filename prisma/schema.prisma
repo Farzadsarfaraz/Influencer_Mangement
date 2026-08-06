@@ -1,0 +1,768 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Auth (Auth.js / NextAuth Prisma adapter contract — do not rename fields)
+// ─────────────────────────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Identity & access
+// ─────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  AGENCY_ADMIN
+  AGENCY_MANAGER
+  AGENCY_MEMBER
+  CLIENT_ADMIN
+  CLIENT_VIEWER
+  INFLUENCER
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String
+  email         String     @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          Role
+  status        UserStatus @default(INVITED)
+  tokenVersion  Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  teamMemberships  TeamMember[]
+  brandMemberships BrandMember[]
+  influencerProfile Influencer?
+
+  ownedCampaigns    Campaign[]        @relation("CampaignOwner")
+  createdCampaigns  Campaign[]        @relation("CampaignCreatedBy")
+  createdAssignments Assignment[]     @relation("AssignmentCreatedBy")
+  addedInfluencers  Influencer[]      @relation("InfluencerCreatedBy")
+  influencerNotes   InfluencerNote[]
+  contentSubmissions ContentSubmission[]
+  comments          Comment[]
+  uploadedFiles     FileAsset[]
+  notifications     Notification[]
+  sentMessages      Message[]
+  activityEvents    ActivityEvent[]
+  auditLogs         AuditLog[]
+  requestedReports  Report[]
+  approvalDecisions ApprovalRequest[] @relation("ApprovalReviewer")
+
+  @@index([role])
+  @@index([status])
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members TeamMember[]
+}
+
+enum TeamRole {
+  LEAD
+  MEMBER
+}
+
+model TeamMember {
+  id     String   @id @default(cuid())
+  teamId String
+  userId String
+  role   TeamRole @default(MEMBER)
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Brands (clients) & customer portal access
+// ─────────────────────────────────────────────────────────────────────────
+
+enum BrandStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Brand {
+  id                   String      @id @default(cuid())
+  name                 String
+  slug                 String      @unique
+  logoUrl              String?
+  industry             String?
+  website              String?
+  primaryContactName   String?
+  primaryContactEmail  String?
+  status               BrandStatus @default(ACTIVE)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  members   BrandMember[]
+  campaigns Campaign[]
+
+  @@index([status])
+}
+
+enum BrandRole {
+  ADMIN
+  VIEWER
+}
+
+model BrandMember {
+  id      String    @id @default(cuid())
+  brandId String
+  userId  String
+  role    BrandRole @default(VIEWER)
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, userId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Influencer CRM
+// ─────────────────────────────────────────────────────────────────────────
+
+enum InfluencerTier {
+  NANO
+  MICRO
+  MID
+  MACRO
+  MEGA
+}
+
+enum InfluencerStatus {
+  PROSPECT
+  ACTIVE
+  INACTIVE
+  DO_NOT_USE
+}
+
+model Influencer {
+  id          String            @id @default(cuid())
+  userId      String?           @unique
+  createdById String
+  displayName String
+  email       String?
+  phone       String?
+  bio         String?           @db.Text
+  location    String?
+  tier        InfluencerTier?
+  status      InfluencerStatus  @default(PROSPECT)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user      User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdBy User  @relation("InfluencerCreatedBy", fields: [createdById], references: [id])
+
+  socialAccounts InfluencerSocialAccount[]
+  notes          InfluencerNote[]
+  tags           Tag[]
+  assignments    Assignment[]
+  conversations  Conversation[]
+
+  @@index([status])
+  @@index([tier])
+}
+
+enum Platform {
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+  TWITTER_X
+  TWITCH
+  FACEBOOK
+  LINKEDIN
+  PINTEREST
+  OTHER
+}
+
+model InfluencerSocialAccount {
+  id              String    @id @default(cuid())
+  influencerId    String
+  platform        Platform
+  handle          String
+  url             String?
+  followerCount   Int?
+  engagementRate  Float?
+  lastSyncedAt    DateTime?
+  createdAt       DateTime  @default(now())
+
+  influencer Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@unique([influencerId, platform, handle])
+}
+
+model InfluencerNote {
+  id           String   @id @default(cuid())
+  influencerId String
+  authorId     String
+  body         String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  influencer Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  author     User       @relation(fields: [authorId], references: [id])
+
+  @@index([influencerId])
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  name String @unique
+
+  influencers Influencer[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Campaigns
+// ─────────────────────────────────────────────────────────────────────────
+
+enum CampaignStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  brandId     String
+  ownerId     String
+  createdById String
+  name        String
+  slug        String         @unique
+  objective   String?
+  description String?        @db.Text
+  status      CampaignStatus @default(DRAFT)
+  budget      Decimal?       @db.Decimal(12, 2)
+  currency    String         @default("USD")
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  brand     Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  owner     User  @relation("CampaignOwner", fields: [ownerId], references: [id])
+  createdBy User  @relation("CampaignCreatedBy", fields: [createdById], references: [id])
+
+  flights         CampaignFlight[]
+  assignments     Assignment[]
+  metricSnapshots CampaignMetricSnapshot[]
+  reports         Report[]
+  activityEvents  ActivityEvent[]
+  conversations   Conversation[]
+
+  @@index([brandId])
+  @@index([status])
+}
+
+enum FlightStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+model CampaignFlight {
+  id         String       @id @default(cuid())
+  campaignId String
+  name       String
+  startDate  DateTime
+  endDate    DateTime
+  budget     Decimal?     @db.Decimal(12, 2)
+  status     FlightStatus @default(PLANNED)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  campaign    Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  assignments Assignment[]
+
+  @@index([campaignId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Assignments (influencer <-> campaign work unit) & deliverables
+// ─────────────────────────────────────────────────────────────────────────
+
+enum AssignmentStatus {
+  INVITED
+  ACCEPTED
+  DECLINED
+  IN_PROGRESS
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  REVISION_REQUESTED
+  COMPLETED
+  CANCELLED
+}
+
+model Assignment {
+  id           String            @id @default(cuid())
+  campaignId   String
+  flightId     String?
+  influencerId String
+  createdById  String
+  fee          Decimal?          @db.Decimal(12, 2)
+  currency     String            @default("USD")
+  status       AssignmentStatus  @default(INVITED)
+  invitedAt    DateTime          @default(now())
+  respondedAt  DateTime?
+  dueDate      DateTime?
+  notes        String?           @db.Text
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  campaign   Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  flight     CampaignFlight? @relation(fields: [flightId], references: [id], onDelete: SetNull)
+  influencer Influencer      @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  createdBy  User            @relation("AssignmentCreatedBy", fields: [createdById], references: [id])
+
+  deliverables Deliverable[]
+  payments     Payment[]
+
+  @@index([campaignId])
+  @@index([influencerId])
+  @@index([status])
+}
+
+enum ContentType {
+  POST
+  STORY
+  REEL
+  VIDEO
+  SHORT
+  BLOG
+  LIVESTREAM
+  OTHER
+}
+
+enum DeliverableStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  APPROVED
+  PUBLISHED
+  REJECTED
+}
+
+model Deliverable {
+  id           String            @id @default(cuid())
+  assignmentId String
+  title        String
+  description  String?           @db.Text
+  platform     Platform
+  contentType  ContentType
+  dueDate      DateTime?
+  status       DeliverableStatus @default(PENDING)
+  publishedUrl String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  submissions ContentSubmission[]
+
+  @@index([assignmentId])
+  @@index([status])
+  @@index([status, dueDate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Content approvals
+// ─────────────────────────────────────────────────────────────────────────
+
+enum ContentSubmissionStatus {
+  SUBMITTED
+  IN_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+model ContentSubmission {
+  id            String                   @id @default(cuid())
+  deliverableId String
+  submittedById String
+  version       Int
+  caption       String?                  @db.Text
+  status        ContentSubmissionStatus  @default(SUBMITTED)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  deliverable Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+  submittedBy User        @relation(fields: [submittedById], references: [id])
+
+  approvalRequests ApprovalRequest[]
+  comments         Comment[]
+
+  @@unique([deliverableId, version])
+  @@index([status])
+}
+
+enum ApprovalStage {
+  INTERNAL
+  CLIENT
+}
+
+enum ApprovalDecision {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+}
+
+model ApprovalRequest {
+  id                  String           @id @default(cuid())
+  contentSubmissionId String
+  stage               ApprovalStage
+  reviewerId          String?
+  decision             ApprovalDecision @default(PENDING)
+  comment             String?          @db.Text
+  decidedAt           DateTime?
+  createdAt           DateTime         @default(now())
+
+  contentSubmission ContentSubmission @relation(fields: [contentSubmissionId], references: [id], onDelete: Cascade)
+  reviewer          User?             @relation("ApprovalReviewer", fields: [reviewerId], references: [id])
+
+  @@index([contentSubmissionId])
+  @@index([stage, decision])
+}
+
+model Comment {
+  id                  String   @id @default(cuid())
+  contentSubmissionId String
+  authorId            String
+  parentId            String?
+  body                String   @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  contentSubmission ContentSubmission @relation(fields: [contentSubmissionId], references: [id], onDelete: Cascade)
+  author            User              @relation(fields: [authorId], references: [id])
+  parent            Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies           Comment[]         @relation("CommentReplies")
+
+  @@index([contentSubmissionId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Files (polymorphic attachment)
+// ─────────────────────────────────────────────────────────────────────────
+
+enum FileEntityType {
+  CAMPAIGN_BRIEF
+  CONTENT_SUBMISSION
+  BRAND_ASSET
+  REPORT
+  INVOICE
+  OTHER
+}
+
+model FileAsset {
+  id           String         @id @default(cuid())
+  entityType   FileEntityType
+  entityId     String
+  uploadedById String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  storageKey   String
+  url          String
+  createdAt    DateTime       @default(now())
+
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@index([entityType, entityId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// KPI metrics & reporting
+// ─────────────────────────────────────────────────────────────────────────
+
+enum MetricSource {
+  MANUAL
+  PLATFORM_API
+  IMPORT
+}
+
+model CampaignMetricSnapshot {
+  id           String       @id @default(cuid())
+  campaignId   String
+  influencerId String?
+  platform     Platform?
+  date         DateTime     @db.Date
+  reach        Int          @default(0)
+  impressions  Int          @default(0)
+  engagements  Int          @default(0)
+  views        Int          @default(0)
+  clicks       Int          @default(0)
+  spend        Decimal?     @db.Decimal(12, 2)
+  source       MetricSource @default(MANUAL)
+  createdAt    DateTime     @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, influencerId, platform, date])
+  @@index([campaignId, date])
+}
+
+enum ReportType {
+  CAMPAIGN_SUMMARY
+  INFLUENCER_PERFORMANCE
+  FINANCIAL
+  CUSTOM
+}
+
+enum ReportFormat {
+  PDF
+  XLSX
+}
+
+enum ReportStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+model Report {
+  id            String       @id @default(cuid())
+  campaignId    String?
+  requestedById String
+  type          ReportType
+  format        ReportFormat
+  status        ReportStatus @default(PENDING)
+  params        Json?
+  fileAssetId   String?
+  errorMessage  String?
+  createdAt     DateTime     @default(now())
+  completedAt   DateTime?
+
+  campaign    Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  requestedBy User      @relation(fields: [requestedById], references: [id])
+
+  @@index([campaignId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Payments
+// ─────────────────────────────────────────────────────────────────────────
+
+enum PaymentStatus {
+  PENDING
+  SCHEDULED
+  PAID
+  FAILED
+  CANCELLED
+}
+
+model Payment {
+  id                 String        @id @default(cuid())
+  assignmentId       String
+  amount             Decimal       @db.Decimal(12, 2)
+  currency           String        @default("USD")
+  status             PaymentStatus @default(PENDING)
+  method             String?
+  dueDate            DateTime?
+  paidAt             DateTime?
+  invoiceFileAssetId String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Messaging
+// ─────────────────────────────────────────────────────────────────────────
+
+model Conversation {
+  id           String   @id @default(cuid())
+  campaignId   String
+  influencerId String
+  createdAt    DateTime @default(now())
+
+  campaign   Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  influencer Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  @@unique([campaignId, influencerId])
+  @@index([influencerId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String   @db.Text
+  readAt         DateTime?
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User          @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Notifications
+// ─────────────────────────────────────────────────────────────────────────
+
+enum NotificationType {
+  ASSIGNMENT_INVITE
+  DELIVERABLE_DUE_SOON
+  CONTENT_SUBMITTED
+  CONTENT_APPROVED
+  CONTENT_CHANGES_REQUESTED
+  CAMPAIGN_STATUS_CHANGED
+  PAYMENT_STATUS_CHANGED
+  NEW_MESSAGE
+  REPORT_READY
+}
+
+model Notification {
+  id        String            @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Activity timeline & audit log
+// ─────────────────────────────────────────────────────────────────────────
+
+model ActivityEvent {
+  id         String   @id @default(cuid())
+  campaignId String?
+  actorId    String
+  verb       String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  actor    User      @relation(fields: [actorId], references: [id])
+
+  @@index([campaignId, createdAt])
+  @@index([entityType, entityId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Administration
+// ─────────────────────────────────────────────────────────────────────────
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String?
+  enabled     Boolean  @default(false)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}

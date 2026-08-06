@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  DATABASE_URL: postgresql://octagon:octagon@localhost:5432/octagon
+  AUTH_SECRET: ci-test-secret
+  AUTH_URL: http://localhost:3000
+  REDIS_URL: redis://localhost:6379
+  S3_ENDPOINT: http://localhost:9000
+  S3_REGION: us-east-1
+  S3_BUCKET: octagon-ci
+  S3_ACCESS_KEY_ID: octagon
+  S3_SECRET_ACCESS_KEY: octagon-secret
+  S3_FORCE_PATH_STYLE: "true"
+  S3_PUBLIC_URL: http://localhost:9000/octagon-ci
+  SMTP_HOST: localhost
+  SMTP_PORT: "1025"
+  SMTP_FROM: "Octagon <ci@octagon.dev>"
+  APP_URL: http://localhost:3000
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: octagon
+          POSTGRES_PASSWORD: octagon
+          POSTGRES_DB: octagon
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U octagon"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Prisma migrate
+        run: npm run db:deploy
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  # Builds and pushes on every PR/push (push: false off main) so a broken
+  # Dockerfile fails CI before it ever reaches main, not after.
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - name: app
+            dockerfile: docker/Dockerfile
+          - name: worker
+            dockerfile: docker/Dockerfile.worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build ${{ matrix.name }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            ghcr.io/${{ github.repository }}/${{ matrix.name }}:latest
+            ghcr.io/${{ github.repository }}/${{ matrix.name }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  # Placeholder for wiring up a real deploy target (Fly.io/ECS/Railway/etc.)
+  # — see docs/ARCHITECTURE.md §14 for why this stays infra-agnostic rather
+  # than hardcoding one platform's CLI here. Add a step that pulls
+  # ghcr.io/<repo>/app:<sha> and ghcr.io/<repo>/worker:<sha> and rolls them
+  # out once a target is chosen.
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Images ready
+        run: |
+          echo "Built and pushed:"
+          echo "  ghcr.io/${{ github.repository }}/app:${{ github.sha }}"
+          echo "  ghcr.io/${{ github.repository }}/worker:${{ github.sha }}"
+          echo "Add a deploy step here once a hosting target is chosen — run 'prisma migrate deploy' as a release step before swapping traffic to the new image."
