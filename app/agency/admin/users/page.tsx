@@ -5,6 +5,7 @@ import { UserRoleSelect } from "@/components/agency/user-role-select";
 import { UserStatusToggle } from "@/components/agency/user-status-toggle";
 import { SearchForm } from "@/components/shared/search-form";
 import { Pagination } from "@/components/shared/pagination";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -25,7 +26,8 @@ export default async function AdminUsersPage(
   const actor = await requireUser();
   const searchParams = await props.searchParams;
   const q = typeof searchParams.q === "string" ? searchParams.q : undefined;
-  const page = typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
+  const page =
+    typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
 
   const { users, total, pageCount } = await listUsers({ query: q, page });
 
@@ -34,9 +36,11 @@ export default async function AdminUsersPage(
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold">Users</h1>
-          <p className="text-sm text-muted-foreground">{total} total</p>
+          <p className="text-muted-foreground text-sm">{total} total</p>
         </div>
-        <CreateAgencyUserDialog canGrantSuperAdmin={actor.role === "SUPER_ADMIN"} />
+        <CreateAgencyUserDialog
+          canGrantSuperAdmin={actor.role === "SUPER_ADMIN"}
+        />
       </div>
 
       <SearchForm defaultValue={q} placeholder="Search users…" />
@@ -59,14 +63,27 @@ export default async function AdminUsersPage(
               return (
                 <TableRow key={user.id}>
                   <TableCell>
-                    <div className="font-medium">{user.name}</div>
-                    <div className="text-sm text-muted-foreground">{user.email}</div>
+                    <div className="flex items-center gap-2.5">
+                      <UserAvatar
+                        name={user.name}
+                        image={user.image}
+                        size="sm"
+                      />
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-muted-foreground text-sm">
+                          {user.email}
+                        </div>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     {user.role === "CLIENT_ADMIN" ||
                     user.role === "CLIENT_VIEWER" ||
                     user.role === "INFLUENCER" ? (
-                      <Badge variant="outline">{user.role.replace("_", " ")}</Badge>
+                      <Badge variant="outline">
+                        {user.role.replace("_", " ")}
+                      </Badge>
                     ) : (
                       <UserRoleSelect
                         userId={user.id}
@@ -77,7 +94,11 @@ export default async function AdminUsersPage(
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.status === "ACTIVE" ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        user.status === "ACTIVE" ? "default" : "secondary"
+                      }
+                    >
                       {user.status}
                     </Badge>
                   </TableCell>
@@ -93,7 +114,10 @@ export default async function AdminUsersPage(
             })}
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={4}
+                  className="text-muted-foreground text-center"
+                >
                   No users found.
                 </TableCell>
               </TableRow>

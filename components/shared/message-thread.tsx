@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { sendMessageAction } from "@/lib/actions/messages";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -12,7 +13,7 @@ type MessageItem = {
   id: string;
   body: string;
   createdAt: Date;
-  sender: { id: string; name: string };
+  sender: { id: string; name: string; image: string | null };
 };
 
 export function MessageThread({
@@ -35,13 +36,12 @@ export function MessageThread({
       <div className="max-h-80 space-y-2 overflow-y-auto">
         {messages.map((message) => {
           const isMine = message.sender.id === currentUserId;
-          return (
+          const bubble = (
             <div
-              key={message.id}
               className={
                 isMine
-                  ? "ml-auto max-w-[80%] rounded-md bg-primary p-2 text-sm text-primary-foreground"
-                  : "mr-auto max-w-[80%] rounded-md bg-muted p-2 text-sm"
+                  ? "bg-primary text-primary-foreground max-w-[80%] rounded-md p-2 text-sm"
+                  : "bg-muted max-w-[80%] rounded-md p-2 text-sm"
               }
             >
               <p>{message.body}</p>
@@ -50,9 +50,36 @@ export function MessageThread({
               </p>
             </div>
           );
+          const avatar = (
+            <UserAvatar
+              name={message.sender.name}
+              image={message.sender.image}
+              size="sm"
+            />
+          );
+          return (
+            <div
+              key={message.id}
+              className={
+                isMine ? "flex justify-end gap-2" : "flex justify-start gap-2"
+              }
+            >
+              {isMine ? (
+                <>
+                  {bubble}
+                  {avatar}
+                </>
+              ) : (
+                <>
+                  {avatar}
+                  {bubble}
+                </>
+              )}
+            </div>
+          );
         })}
         {messages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No messages yet.</p>
+          <p className="text-muted-foreground text-sm">No messages yet.</p>
         ) : null}
       </div>
       <form
@@ -64,7 +91,11 @@ export function MessageThread({
           if (typeof body !== "string" || !body.trim()) return;
 
           startTransition(async () => {
-            const result = await sendMessageAction({ campaignId, influencerId, body });
+            const result = await sendMessageAction({
+              campaignId,
+              influencerId,
+              body,
+            });
             if (!result.ok) {
               toast.error(result.error);
               return;
@@ -74,7 +105,12 @@ export function MessageThread({
           });
         }}
       >
-        <Textarea name="body" placeholder="Write a message…" rows={1} required />
+        <Textarea
+          name="body"
+          placeholder="Write a message…"
+          rows={1}
+          required
+        />
         <Button type="submit" disabled={pending}>
           Send
         </Button>

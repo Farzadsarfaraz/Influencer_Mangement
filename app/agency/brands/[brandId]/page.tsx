@@ -4,13 +4,9 @@ import { BrandStatusToggle } from "@/components/agency/brand-status-toggle";
 import { RemoveBrandMemberButton } from "@/components/agency/brand-member-row-actions";
 import { InviteBrandMemberDialog } from "@/components/agency/invite-brand-member-dialog";
 import { ActivityTimeline } from "@/components/shared/activity-timeline";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -38,11 +34,13 @@ export default async function BrandDetailPage(
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-semibold">{brand.name}</h1>
-            <Badge variant={brand.status === "ACTIVE" ? "default" : "secondary"}>
+            <Badge
+              variant={brand.status === "ACTIVE" ? "default" : "secondary"}
+            >
               {brand.status}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {brand.industry ?? "No industry set"}
             {brand.website ? ` · ${brand.website}` : ""}
           </p>
@@ -70,9 +68,18 @@ export default async function BrandDetailPage(
                 {brand.members.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell>
-                      <div className="font-medium">{member.user.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {member.user.email}
+                      <div className="flex items-center gap-2.5">
+                        <UserAvatar
+                          name={member.user.name}
+                          image={member.user.image}
+                          size="sm"
+                        />
+                        <div>
+                          <div className="font-medium">{member.user.name}</div>
+                          <div className="text-muted-foreground text-sm">
+                            {member.user.email}
+                          </div>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>{member.role}</TableCell>
@@ -87,7 +94,10 @@ export default async function BrandDetailPage(
                 ))}
                 {brand.members.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={4}
+                      className="text-muted-foreground text-center"
+                    >
                       No contacts yet.
                     </TableCell>
                   </TableRow>
@@ -112,13 +122,18 @@ export default async function BrandDetailPage(
               <TableBody>
                 {brand.campaigns.map((campaign) => (
                   <TableRow key={campaign.id}>
-                    <TableCell className="font-medium">{campaign.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {campaign.name}
+                    </TableCell>
                     <TableCell>{campaign.status}</TableCell>
                   </TableRow>
                 ))}
                 {brand.campaigns.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={2}
+                      className="text-muted-foreground text-center"
+                    >
                       No campaigns yet.
                     </TableCell>
                   </TableRow>

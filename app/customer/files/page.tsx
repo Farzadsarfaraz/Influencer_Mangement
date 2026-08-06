@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { UserAvatar } from "@/components/shared/user-avatar";
 import {
   Table,
   TableBody,
@@ -22,8 +23,9 @@ export default async function CustomerFilesPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-semibold">Files</h1>
-      <p className="text-sm text-muted-foreground">
-        Approved content ready to download, across every campaign you have access to.
+      <p className="text-muted-foreground text-sm">
+        Approved content ready to download, across every campaign you have
+        access to.
       </p>
 
       <div className="rounded-lg border">
@@ -40,8 +42,21 @@ export default async function CustomerFilesPage() {
             {entries.map(({ file, submission }) => (
               <TableRow key={file.id}>
                 <TableCell className="font-medium">{file.fileName}</TableCell>
-                <TableCell>{submission.deliverable.assignment.campaign.name}</TableCell>
-                <TableCell>{submission.deliverable.assignment.influencer.displayName}</TableCell>
+                <TableCell>
+                  {submission.deliverable.assignment.campaign.name}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <UserAvatar
+                      name={
+                        submission.deliverable.assignment.influencer.displayName
+                      }
+                      image={null}
+                      size="sm"
+                    />
+                    {submission.deliverable.assignment.influencer.displayName}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <a
                     href={file.url}
@@ -56,7 +71,10 @@ export default async function CustomerFilesPage() {
             ))}
             {entries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={4}
+                  className="text-muted-foreground text-center"
+                >
                   No approved files yet.
                 </TableCell>
               </TableRow>

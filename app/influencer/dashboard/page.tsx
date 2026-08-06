@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { Reveal } from "@/components/shared/reveal";
 import { StatCard } from "@/components/shared/stat-card";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import {
   getAssignmentCountsForInfluencer,
   getInfluencerForUser,
@@ -17,7 +18,7 @@ export default async function InfluencerDashboardPage() {
 
   if (!influencer) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Your creator profile hasn&apos;t been linked yet. Contact your agency
         contact for help.
       </p>
@@ -30,10 +31,23 @@ export default async function InfluencerDashboardPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-semibold">Welcome, {influencer.displayName}</h1>
+      <div className="flex items-center gap-3">
+        <UserAvatar
+          name={influencer.displayName}
+          image={user.image}
+          size="lg"
+        />
+        <h1 className="text-3xl font-semibold">
+          Welcome, {influencer.displayName}
+        </h1>
+      </div>
       <Reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard label="Active assignments" value={active} icon={Sparkles} />
-        <StatCard label="Awaiting your response" value={awaitingResponse} icon={Clock} />
+        <StatCard
+          label="Awaiting your response"
+          value={awaitingResponse}
+          icon={Clock}
+        />
       </Reveal>
     </div>
   );

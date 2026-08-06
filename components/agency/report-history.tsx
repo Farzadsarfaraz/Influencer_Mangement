@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getReportsForCampaignAction } from "@/lib/actions/reports";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -50,7 +51,16 @@ export function ReportHistory({
           <TableRow key={report.id}>
             <TableCell>{report.createdAt.toLocaleString()}</TableCell>
             <TableCell>{report.format}</TableCell>
-            <TableCell>{report.requestedBy.name}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <UserAvatar
+                  name={report.requestedBy.name}
+                  image={report.requestedBy.image}
+                  size="sm"
+                />
+                {report.requestedBy.name}
+              </div>
+            </TableCell>
             <TableCell>
               <Badge
                 variant={
@@ -73,7 +83,10 @@ export function ReportHistory({
         ))}
         {reports.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={5} className="text-center text-muted-foreground">
+            <TableCell
+              colSpan={5}
+              className="text-muted-foreground text-center"
+            >
               No reports generated yet.
             </TableCell>
           </TableRow>
@@ -87,7 +100,7 @@ function ReportDownloadLink({ reportId }: { reportId: string }) {
   return (
     <a
       href={`/api/reports/${reportId}/download`}
-      className="text-sm text-primary hover:underline"
+      className="text-primary text-sm hover:underline"
     >
       Download
     </a>

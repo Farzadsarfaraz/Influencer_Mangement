@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { CampaignFilters } from "@/components/agency/campaign-filters";
 import { Pagination } from "@/components/shared/pagination";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +29,8 @@ export default async function CampaignsPage(
     typeof searchParams.status === "string"
       ? (searchParams.status as CampaignStatus)
       : undefined;
-  const page = typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
+  const page =
+    typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
 
   const { campaigns, pageCount } = await listCampaigns({ query, status, page });
 
@@ -69,9 +71,20 @@ export default async function CampaignsPage(
                   </Link>
                 </TableCell>
                 <TableCell>{campaign.brand.name}</TableCell>
-                <TableCell>{campaign.owner.name}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{campaign.status.replace("_", " ")}</Badge>
+                  <div className="flex items-center gap-2">
+                    <UserAvatar
+                      name={campaign.owner.name}
+                      image={campaign.owner.image}
+                      size="sm"
+                    />
+                    {campaign.owner.name}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary">
+                    {campaign.status.replace("_", " ")}
+                  </Badge>
                 </TableCell>
                 <TableCell>{campaign._count.flights}</TableCell>
                 <TableCell>{campaign._count.assignments}</TableCell>
@@ -79,7 +92,10 @@ export default async function CampaignsPage(
             ))}
             {campaigns.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={6}
+                  className="text-muted-foreground text-center"
+                >
                   No campaigns found.
                 </TableCell>
               </TableRow>

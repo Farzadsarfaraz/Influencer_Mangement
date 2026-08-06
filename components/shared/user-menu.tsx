@@ -3,7 +3,7 @@
 import { LogOut } from "lucide-react";
 
 import { signOutAction } from "@/lib/actions/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,15 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 export function UserMenu({
   name,
@@ -35,12 +26,9 @@ export function UserMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Account menu for ${name}`}
-        className="flex items-center gap-2 rounded-md p-1.5 text-left outline-none hover:bg-accent"
+        className="hover:bg-accent flex items-center gap-2 rounded-md p-1.5 text-left outline-none"
       >
-        <Avatar className="size-8">
-          {image ? <AvatarImage src={image} alt="" /> : null}
-          <AvatarFallback>{initials(name)}</AvatarFallback>
-        </Avatar>
+        <UserAvatar name={name} image={image} />
         <div className="hidden text-sm leading-tight sm:block">
           <div className="font-medium">{name}</div>
           <div className="text-muted-foreground">{email}</div>

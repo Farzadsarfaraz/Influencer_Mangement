@@ -2,12 +2,8 @@ import { notFound } from "next/navigation";
 
 import { AddTeamMemberDialog } from "@/components/agency/add-team-member-dialog";
 import { RemoveTeamMemberButton } from "@/components/agency/team-member-row-actions";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -50,20 +46,35 @@ export default async function TeamDetailPage(
               {team.members.map((member) => (
                 <TableRow key={member.id}>
                   <TableCell>
-                    <div className="font-medium">{member.user.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {member.user.email}
+                    <div className="flex items-center gap-2.5">
+                      <UserAvatar
+                        name={member.user.name}
+                        image={member.user.image}
+                        size="sm"
+                      />
+                      <div>
+                        <div className="font-medium">{member.user.name}</div>
+                        <div className="text-muted-foreground text-sm">
+                          {member.user.email}
+                        </div>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>{member.role}</TableCell>
                   <TableCell>
-                    <RemoveTeamMemberButton teamId={team.id} userId={member.userId} />
+                    <RemoveTeamMemberButton
+                      teamId={team.id}
+                      userId={member.userId}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
               {team.members.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={3}
+                    className="text-muted-foreground text-center"
+                  >
                     No members yet.
                   </TableCell>
                 </TableRow>

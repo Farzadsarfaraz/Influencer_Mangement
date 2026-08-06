@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AssignInfluencerDialog } from "@/components/agency/assign-influencer-dialog";
 import { CampaignTabs } from "@/components/agency/campaign-tabs";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -35,7 +36,7 @@ export default async function CampaignAssignmentsPage(
     <div className="space-y-4">
       <div>
         <h1 className="text-3xl font-semibold">{campaign.name}</h1>
-        <p className="text-sm text-muted-foreground">{campaign.brand.name}</p>
+        <p className="text-muted-foreground text-sm">{campaign.brand.name}</p>
       </div>
 
       <CampaignTabs campaignId={campaign.id} />
@@ -65,24 +66,36 @@ export default async function CampaignAssignmentsPage(
                 <TableCell className="font-medium">
                   <Link
                     href={`/agency/campaigns/${campaign.id}/assignments/${assignment.id}`}
-                    className="hover:underline"
+                    className="flex items-center gap-2.5 hover:underline"
                   >
+                    <UserAvatar
+                      name={assignment.influencer.displayName}
+                      image={null}
+                      size="sm"
+                    />
                     {assignment.influencer.displayName}
                   </Link>
                 </TableCell>
                 <TableCell>{assignment.flight?.name ?? "—"}</TableCell>
                 <TableCell>
-                  {assignment.fee ? `$${Number(assignment.fee).toLocaleString()}` : "—"}
+                  {assignment.fee
+                    ? `$${Number(assignment.fee).toLocaleString()}`
+                    : "—"}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{assignment.status.replace("_", " ")}</Badge>
+                  <Badge variant="secondary">
+                    {assignment.status.replace("_", " ")}
+                  </Badge>
                 </TableCell>
                 <TableCell>{assignment._count.deliverables}</TableCell>
               </TableRow>
             ))}
             {assignments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={5}
+                  className="text-muted-foreground text-center"
+                >
                   No assignments yet.
                 </TableCell>
               </TableRow>

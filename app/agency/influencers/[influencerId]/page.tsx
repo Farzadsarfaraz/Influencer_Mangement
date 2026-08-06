@@ -7,14 +7,10 @@ import { AddSocialAccountDialog } from "@/components/agency/add-social-account-d
 import { InviteInfluencerButton } from "@/components/agency/invite-influencer-button";
 import { RemoveSocialAccountButton } from "@/components/agency/social-account-row-actions";
 import { ActivityTimeline } from "@/components/shared/activity-timeline";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getEntityActivity } from "@/lib/data/activity";
 import { getInfluencerDetail } from "@/lib/data/influencers";
@@ -33,12 +29,15 @@ export default async function InfluencerDetailPage(
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <UserAvatar name={influencer.displayName} image={null} size="lg" />
             <h1 className="text-3xl font-semibold">{influencer.displayName}</h1>
             <Badge variant="secondary">{influencer.status}</Badge>
-            {influencer.tier ? <Badge variant="outline">{influencer.tier}</Badge> : null}
+            {influencer.tier ? (
+              <Badge variant="outline">{influencer.tier}</Badge>
+            ) : null}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {influencer.email ?? "No email"}
             {influencer.location ? ` · ${influencer.location}` : ""}
           </p>
@@ -65,7 +64,9 @@ export default async function InfluencerDetailPage(
       </div>
 
       {influencer.bio ? (
-        <p className="max-w-2xl text-sm text-muted-foreground">{influencer.bio}</p>
+        <p className="text-muted-foreground max-w-2xl text-sm">
+          {influencer.bio}
+        </p>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -98,7 +99,9 @@ export default async function InfluencerDetailPage(
               </div>
             ))}
             {influencer.socialAccounts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No social accounts yet.</p>
+              <p className="text-muted-foreground text-sm">
+                No social accounts yet.
+              </p>
             ) : null}
           </CardContent>
         </Card>
@@ -112,7 +115,7 @@ export default async function InfluencerDetailPage(
               <Link
                 key={assignment.id}
                 href={`/agency/campaigns/${assignment.campaignId}/assignments/${assignment.id}`}
-                className="block rounded-md border p-3 text-sm hover:bg-accent"
+                className="hover:bg-accent block rounded-md border p-3 text-sm"
               >
                 <div className="font-medium">{assignment.campaign.name}</div>
                 <div className="text-muted-foreground">
@@ -121,7 +124,9 @@ export default async function InfluencerDetailPage(
               </Link>
             ))}
             {influencer.assignments.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No assignments yet.</p>
+              <p className="text-muted-foreground text-sm">
+                No assignments yet.
+              </p>
             ) : null}
           </CardContent>
         </Card>
@@ -136,15 +141,23 @@ export default async function InfluencerDetailPage(
           <Separator />
           <div className="space-y-3">
             {influencer.notes.map((note) => (
-              <div key={note.id} className="text-sm">
-                <p>{note.body}</p>
-                <p className="text-xs text-muted-foreground">
-                  {note.author.name} · {note.createdAt.toLocaleDateString()}
-                </p>
+              <div key={note.id} className="flex gap-2 text-sm">
+                <UserAvatar
+                  name={note.author.name}
+                  image={note.author.image}
+                  size="sm"
+                  className="mt-0.5 shrink-0"
+                />
+                <div>
+                  <p>{note.body}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {note.author.name} · {note.createdAt.toLocaleDateString()}
+                  </p>
+                </div>
               </div>
             ))}
             {influencer.notes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No notes yet.</p>
+              <p className="text-muted-foreground text-sm">No notes yet.</p>
             ) : null}
           </div>
         </CardContent>

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { InfluencerFilters } from "@/components/agency/influencer-filters";
 import { Pagination } from "@/components/shared/pagination";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,9 +33,15 @@ export default async function InfluencersPage(
     typeof searchParams.status === "string"
       ? (searchParams.status as InfluencerStatus)
       : undefined;
-  const page = typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
+  const page =
+    typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
 
-  const { influencers, pageCount } = await listInfluencers({ query, tier, status, page });
+  const { influencers, pageCount } = await listInfluencers({
+    query,
+    tier,
+    status,
+    page,
+  });
 
   return (
     <div className="space-y-4">
@@ -67,8 +74,13 @@ export default async function InfluencersPage(
                 <TableCell className="font-medium">
                   <Link
                     href={`/agency/influencers/${influencer.id}`}
-                    className="hover:underline"
+                    className="flex items-center gap-2.5 hover:underline"
                   >
+                    <UserAvatar
+                      name={influencer.displayName}
+                      image={null}
+                      size="sm"
+                    />
                     {influencer.displayName}
                   </Link>
                 </TableCell>
@@ -89,7 +101,10 @@ export default async function InfluencersPage(
             ))}
             {influencers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={6}
+                  className="text-muted-foreground text-center"
+                >
                   No influencers found.
                 </TableCell>
               </TableRow>

@@ -8,13 +8,9 @@ import { RemoveDeliverableButton } from "@/components/agency/deliverable-row-act
 import { PaymentStatusControl } from "@/components/agency/payment-status-control";
 import { MessageThread } from "@/components/shared/message-thread";
 import { Reveal } from "@/components/shared/reveal";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth/session";
 import { getAssignmentDetail } from "@/lib/data/assignments";
 import { getConversation } from "@/lib/data/messaging";
@@ -38,21 +34,28 @@ export default async function AssignmentDetailPage(
       <div>
         <Link
           href={`/agency/campaigns/${campaignId}/assignments`}
-          className="text-sm text-muted-foreground hover:underline"
+          className="text-muted-foreground text-sm hover:underline"
         >
           ← Back to assignments
         </Link>
       </div>
 
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">
-            {assignment.influencer.displayName}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {assignment.campaign.name} · {assignment.campaign.brand.name}
-            {assignment.flight ? ` · ${assignment.flight.name}` : ""}
-          </p>
+        <div className="flex items-start gap-3">
+          <UserAvatar
+            name={assignment.influencer.displayName}
+            image={null}
+            size="lg"
+          />
+          <div>
+            <h1 className="text-3xl font-semibold">
+              {assignment.influencer.displayName}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {assignment.campaign.name} · {assignment.campaign.brand.name}
+              {assignment.flight ? ` · ${assignment.flight.name}` : ""}
+            </p>
+          </div>
         </div>
         <AssignmentStatusControl
           assignmentId={assignment.id}
@@ -63,17 +66,19 @@ export default async function AssignmentDetailPage(
       <Reveal className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Fee
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xl font-semibold">
-            {assignment.fee ? `$${Number(assignment.fee).toLocaleString()}` : "—"}
+            {assignment.fee
+              ? `$${Number(assignment.fee).toLocaleString()}`
+              : "—"}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Due date
             </CardTitle>
           </CardHeader>
@@ -83,18 +88,22 @@ export default async function AssignmentDetailPage(
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Status
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant="secondary">{assignment.status.replace("_", " ")}</Badge>
+            <Badge variant="secondary">
+              {assignment.status.replace("_", " ")}
+            </Badge>
           </CardContent>
         </Card>
       </Reveal>
 
       {assignment.notes ? (
-        <p className="max-w-2xl text-sm text-muted-foreground">{assignment.notes}</p>
+        <p className="text-muted-foreground max-w-2xl text-sm">
+          {assignment.notes}
+        </p>
       ) : null}
 
       <Card>
@@ -124,7 +133,9 @@ export default async function AssignmentDetailPage(
             </div>
           ))}
           {assignment.deliverables.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No deliverables yet.</p>
+            <p className="text-muted-foreground text-sm">
+              No deliverables yet.
+            </p>
           ) : null}
         </CardContent>
       </Card>
@@ -151,11 +162,16 @@ export default async function AssignmentDetailPage(
                   {payment.method ? ` · ${payment.method}` : ""}
                 </div>
               </div>
-              <PaymentStatusControl paymentId={payment.id} status={payment.status} />
+              <PaymentStatusControl
+                paymentId={payment.id}
+                status={payment.status}
+              />
             </div>
           ))}
           {payments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No payments scheduled.</p>
+            <p className="text-muted-foreground text-sm">
+              No payments scheduled.
+            </p>
           ) : null}
         </CardContent>
       </Card>
