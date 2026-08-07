@@ -93,6 +93,13 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
+      # GHCR (and Docker registries generally) require a lowercase image
+      # path — github.repository preserves the repo's actual casing
+      # (Farzadsarfaraz/octagon), which fails the tag validation.
+      - name: Set lowercase repository name
+        id: repo
+        run: echo "name=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
       - name: Log in to GHCR
         if: github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
@@ -108,8 +115,8 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
-            ghcr.io/${{ github.repository }}/${{ matrix.name }}:latest
-            ghcr.io/${{ github.repository }}/${{ matrix.name }}:${{ github.sha }}
+            ghcr.io/${{ steps.repo.outputs.name }}/${{ matrix.name }}:latest
+            ghcr.io/${{ steps.repo.outputs.name }}/${{ matrix.name }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
@@ -126,7 +133,8 @@ jobs:
     steps:
       - name: Images ready
         run: |
+          repo="${GITHUB_REPOSITORY,,}"
           echo "Built and pushed:"
-          echo "  ghcr.io/${{ github.repository }}/app:${{ github.sha }}"
-          echo "  ghcr.io/${{ github.repository }}/worker:${{ github.sha }}"
+          echo "  ghcr.io/${repo}/app:${{ github.sha }}"
+          echo "  ghcr.io/${repo}/worker:${{ github.sha }}"
           echo "Add a deploy step here once a hosting target is chosen — run 'prisma migrate deploy' as a release step before swapping traffic to the new image."
