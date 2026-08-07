@@ -27,7 +27,11 @@ COPY lib ./lib
 COPY worker ./worker
 COPY types ./types
 
-RUN npx prisma generate
+# DATABASE_URL is build-time only, scoped to this one command (not a
+# persistent ENV) — prisma.config.ts resolves it eagerly just to load, even
+# for `generate`, which never actually connects. The real value comes from
+# the container's runtime env, set at `docker run`/deploy time.
+RUN DATABASE_URL=postgresql://octagon:octagon@localhost:5432/octagon npx prisma generate
 
 USER worker
 CMD ["npx", "tsx", "worker/index.ts"]
