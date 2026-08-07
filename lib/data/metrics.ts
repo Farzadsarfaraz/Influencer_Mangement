@@ -33,6 +33,26 @@ export async function getCampaignMetricsSummary(campaignId: string) {
   };
 }
 
+/** Agency-wide trend for the dashboard chart — every campaign, last 30 days. */
+export async function getAgencyMetricsByDate(days = 30) {
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  const snapshots = await db.campaignMetricSnapshot.groupBy({
+    by: ["date"],
+    where: { date: { gte: since } },
+    _sum: { reach: true, impressions: true, engagements: true },
+    orderBy: { date: "asc" },
+  });
+
+  return snapshots.map((row) => ({
+    date: row.date,
+    reach: row._sum.reach ?? 0,
+    impressions: row._sum.impressions ?? 0,
+    engagements: row._sum.engagements ?? 0,
+  }));
+}
+
 export async function getCampaignMetricsByDate(campaignId: string) {
   const snapshots = await db.campaignMetricSnapshot.groupBy({
     by: ["date"],

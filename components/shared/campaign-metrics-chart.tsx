@@ -25,6 +25,12 @@ type MetricPoint = {
   engagements: number;
 };
 
+function formatTick(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}m`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(0)}k`;
+  return `${value}`;
+}
+
 export function CampaignMetricsChart({ data }: { data: MetricPoint[] }) {
   if (data.length === 0) {
     return (
@@ -65,7 +71,8 @@ export function CampaignMetricsChart({ data }: { data: MetricPoint[] }) {
             tickLine={false}
             axisLine={false}
             tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-            width={48}
+            tickFormatter={formatTick}
+            width={40}
           />
           <Tooltip
             contentStyle={{

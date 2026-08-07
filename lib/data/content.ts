@@ -132,6 +132,30 @@ export async function getCampaignApprovalQueue(
   });
 }
 
+/** Agency-wide internal review queue for the dashboard's attention widget. */
+export async function listPendingInternalApprovals(take = 5) {
+  const [requests, total] = await Promise.all([
+    db.approvalRequest.findMany({
+      where: { stage: "INTERNAL", decision: "PENDING" },
+      include: {
+        contentSubmission: {
+          include: {
+            deliverable: {
+              include: {
+                assignment: { include: { influencer: true, campaign: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+      take,
+    }),
+    db.approvalRequest.count({ where: { stage: "INTERNAL", decision: "PENDING" } }),
+  ]);
+  return { requests, total };
+}
+
 export async function getApprovedSubmissionsForCampaign(campaignId: string) {
   const submissions = await db.contentSubmission.findMany({
     where: {
