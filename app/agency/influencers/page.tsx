@@ -2,20 +2,11 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+import { InfluencerCardGrid } from "@/components/agency/influencer-card-grid";
 import { InfluencerFilters } from "@/components/agency/influencer-filters";
 import { OctagonBackground } from "@/components/agency/octagon-background";
 import { Pagination } from "@/components/shared/pagination";
-import { UserAvatar } from "@/components/shared/user-avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { listInfluencers } from "@/lib/data/influencers";
 import type { InfluencerStatus, InfluencerTier } from "@prisma/client";
 
@@ -58,62 +49,7 @@ export default async function InfluencersPage(
 
       <InfluencerFilters />
 
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Tier</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Platforms</TableHead>
-              <TableHead>Tags</TableHead>
-              <TableHead>Assignments</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {influencers.map((influencer) => (
-              <TableRow key={influencer.id}>
-                <TableCell className="font-medium">
-                  <Link
-                    href={`/agency/influencers/${influencer.id}`}
-                    className="flex items-center gap-2.5 hover:underline"
-                  >
-                    <UserAvatar
-                      name={influencer.displayName}
-                      image={influencer.avatarUrl}
-                      size="sm"
-                    />
-                    {influencer.displayName}
-                  </Link>
-                </TableCell>
-                <TableCell>{influencer.tier ?? "—"}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{influencer.status}</Badge>
-                </TableCell>
-                <TableCell>{influencer.socialAccounts.length}</TableCell>
-                <TableCell className="space-x-1">
-                  {influencer.tags.map((tag) => (
-                    <Badge key={tag.id} variant="outline">
-                      {tag.name}
-                    </Badge>
-                  ))}
-                </TableCell>
-                <TableCell>{influencer._count.assignments}</TableCell>
-              </TableRow>
-            ))}
-            {influencers.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-muted-foreground text-center"
-                >
-                  No influencers found.
-                </TableCell>
-              </TableRow>
-            ) : null}
-          </TableBody>
-        </Table>
-      </div>
+      <InfluencerCardGrid influencers={influencers} />
 
       <Pagination
         page={page}
