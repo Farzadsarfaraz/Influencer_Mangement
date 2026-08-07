@@ -13,7 +13,7 @@ const SIGN_IN_WINDOW_SECONDS = 15 * 60;
 
 export type SignInState =
   | { status: "error"; message: string }
-  | { status: "success"; redirectTo: string }
+  | { status: "success"; redirectTo: string; isReturning: boolean }
   | undefined;
 
 export async function signInAction(
@@ -48,12 +48,16 @@ export async function signInAction(
   }
 
   let redirectTo = "/";
+  let isReturning = false;
   if (typeof email === "string") {
     const user = await db.user.findUnique({
       where: { email },
-      select: { role: true },
+      select: { role: true, lastLoginAt: true },
     });
-    if (user) redirectTo = `/${portalForRole(user.role)}/dashboard`;
+    if (user) {
+      redirectTo = `/${portalForRole(user.role)}/dashboard`;
+      isReturning = user.lastLoginAt !== null;
+    }
   }
 
   try {
@@ -69,7 +73,14 @@ export async function signInAction(
     throw error;
   }
 
-  return { status: "success", redirectTo };
+  if (typeof email === "string") {
+    await db.user.update({
+      where: { email },
+      data: { lastLoginAt: new Date() },
+    });
+  }
+
+  return { status: "success", redirectTo, isReturning };
 }
 
 export async function signOutAction() {

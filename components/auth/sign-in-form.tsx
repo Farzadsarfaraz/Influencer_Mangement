@@ -32,7 +32,12 @@ export function SignInForm() {
   }, [state]);
 
   if (state?.status === "success") {
-    return <SignInSplash onFinished={() => router.push(state.redirectTo)} />;
+    return (
+      <SignInSplash
+        isReturning={state.isReturning}
+        onFinished={() => router.push(state.redirectTo)}
+      />
+    );
   }
 
   return (

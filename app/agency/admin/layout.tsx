@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AdminBackground } from "@/components/agency/admin-background";
+import { OctagonBackground } from "@/components/agency/octagon-background";
 import { ADMIN_ROLES } from "@/lib/auth/permissions";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -22,7 +22,7 @@ export default async function AdminLayout({
 
   return (
     <div className="relative isolate min-h-[calc(100vh-8rem)] space-y-6">
-      <AdminBackground />
+      <OctagonBackground />
       <div className="flex gap-4 border-b pb-2 text-sm">
         {ADMIN_NAV.map((item) => (
           <Link

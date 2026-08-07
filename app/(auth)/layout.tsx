@@ -1,8 +1,8 @@
 import { CheckCircle2 } from "lucide-react";
 
-import { FloatingOrbs } from "@/components/shared/floating-orbs";
 import { MorphingWordmark } from "@/components/shared/morphing-wordmark";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { WovenBackground } from "@/components/shared/woven-background";
 
 const HIGHLIGHTS = [
   "Brief to payout in one workspace",
@@ -22,7 +22,7 @@ export default function AuthLayout({
       </div>
 
       <div className="bg-primary text-primary-foreground relative hidden overflow-hidden md:flex md:flex-col md:justify-between md:p-8 lg:p-12">
-        <FloatingOrbs />
+        <WovenBackground />
         <MorphingWordmark />
 
         <div className="relative z-10 max-w-md space-y-8">
@@ -50,7 +50,9 @@ export default function AuthLayout({
             <span className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-xl text-base font-semibold">
               O
             </span>
-            <span className="text-lg font-semibold tracking-tight">Octagon</span>
+            <span className="text-lg font-semibold tracking-tight">
+              Octagon
+            </span>
           </div>
           {children}
         </div>

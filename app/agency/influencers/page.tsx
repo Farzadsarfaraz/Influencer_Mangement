@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { InfluencerFilters } from "@/components/agency/influencer-filters";
+import { OctagonBackground } from "@/components/agency/octagon-background";
 import { Pagination } from "@/components/shared/pagination";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +45,8 @@ export default async function InfluencersPage(
   });
 
   return (
-    <div className="space-y-4">
+    <div className="relative isolate min-h-[calc(100vh-8rem)] space-y-4">
+      <OctagonBackground />
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold">Influencers</h1>
         <Button asChild>

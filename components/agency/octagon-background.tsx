@@ -11,37 +11,45 @@ import { useRef } from "react";
 const OCTAGON_CLIP =
   "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)";
 
-// Fixed pixel offsets, not percentages — admin pages vary wildly in height
-// (a short settings form vs. a long user table), and the table/card content
-// below is deliberately opaque for readability, so anything positioned as a
-// % of the full (often very tall) container mostly ends up hidden behind
-// it. Anchoring to a fixed band at the top keeps every shape inside the one
-// area that's reliably visible above the content on every admin page.
+// Fixed pixel offsets, not percentages — these pages vary wildly in height
+// (a short settings form vs. a long user table vs. a dashboard), and the
+// card/table content below is deliberately opaque for readability, so
+// anything positioned as a % of the full (often very tall) container
+// mostly ends up hidden behind it. Anchoring to a fixed band at the top
+// keeps every shape inside the one area that's reliably visible above the
+// content on every page this is used on.
 const SHAPES = [
-  { size: 260, top: -70, left: "58%", z: -80, rx: 16, ry: 0, duration: 42 },
-  { size: 170, top: -20, left: "82%", z: -30, rx: -14, ry: 18, duration: 34 },
-  { size: 200, top: -50, left: "4%", z: -110, rx: 12, ry: -16, duration: 48 },
-  { size: 120, top: 40, left: "24%", z: -20, rx: -18, ry: 12, duration: 28 },
+  { size: 260, top: -70, left: "58%", z: -80, rx: 16, ry: 0, duration: 62 },
+  { size: 170, top: -20, left: "82%", z: -30, rx: -14, ry: 18, duration: 50 },
+  { size: 200, top: -50, left: "4%", z: -110, rx: 12, ry: -16, duration: 70 },
+  { size: 120, top: 40, left: "24%", z: -20, rx: -18, ry: 12, duration: 42 },
 ];
 
 const BAND_HEIGHT = 220;
 
 /**
- * Ambient depth behind the admin panel's header band (tab nav + page
- * heading) — real CSS 3D (perspective + preserve-3d + rotateX/Y), not a
- * flat blurred blob. Confined to a fixed-height strip at the top rather
- * than the whole (often much taller, opaque-table-covered) admin section —
+ * Ambient depth behind a portal page's header band (tab nav / page heading)
+ * — real CSS 3D (perspective + preserve-3d + rotateX/Y), not a flat
+ * blurred blob. Confined to a fixed-height strip at the top rather than
+ * the whole (often much taller, opaque-content-covered) section below it —
  * see SHAPES' comment. Respects prefers-reduced-motion: shapes still
  * render (the depth/parallax look is static and fine to keep), just
  * without the continuous rotation.
+ *
+ * Used on the admin section (app/agency/admin/layout.tsx), the agency
+ * dashboard (app/agency/dashboard/page.tsx), and the influencers list
+ * (app/agency/influencers/page.tsx) — the caller just needs a `relative
+ * isolate` ancestor (the `isolate` matters: without it, this div's -z-10
+ * can escape further up the stacking context than intended and render
+ * behind the whole page instead of just its siblings).
  */
-export function AdminBackground() {
+export function OctagonBackground() {
   const scope = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       const shapes = scope.current
-        ? gsap.utils.toArray<HTMLElement>(".admin-bg-shape")
+        ? gsap.utils.toArray<HTMLElement>(".octagon-bg-shape")
         : [];
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
@@ -55,7 +63,7 @@ export function AdminBackground() {
           });
           gsap.to(shape, {
             y: i % 2 === 0 ? 14 : -14,
-            duration: 6 + i,
+            duration: 9 + i * 1.5,
             repeat: -1,
             yoyo: true,
             ease: "sine.inOut",
@@ -85,7 +93,7 @@ export function AdminBackground() {
       {SHAPES.map((shape, i) => (
         <div
           key={i}
-          className="admin-bg-shape absolute opacity-[0.16] blur-[1px] dark:opacity-[0.22]"
+          className="octagon-bg-shape absolute opacity-[0.16] blur-[1px] dark:opacity-[0.22]"
           data-duration={shape.duration}
           style={{
             width: shape.size,
