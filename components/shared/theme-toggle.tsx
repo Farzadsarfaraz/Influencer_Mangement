@@ -2,7 +2,7 @@
 
 import { Moon, Sun, SunMoon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +18,18 @@ import {
  * localStorage/OS preference, so rendering it pre-mount would hydrate to
  * the wrong icon and mismatch.
  */
+const noSubscription = () => () => {};
+
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  // Hydration-safe mount check without a setState-in-effect: the server
+  // snapshot is always false, the client snapshot always true, so React
+  // itself reconciles the mismatch instead of us re-rendering post-mount.
+  const mounted = useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
 
   const Icon = !mounted ? SunMoon : theme === "dark" ? Moon : theme === "light" ? Sun : SunMoon;
 
