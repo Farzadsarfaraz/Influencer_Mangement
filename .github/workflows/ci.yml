@@ -48,6 +48,16 @@ jobs:
 
       - run: npm ci
 
+      # tsc needs the real @prisma/client types and Next's generated
+      # PageProps/LayoutProps helpers (`.next/types`) — neither exists
+      # after a bare `npm ci`, so typecheck fails on a fresh checkout
+      # without these.
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Generate Next.js route types
+        run: npx next typegen
+
       - name: Lint
         run: npm run lint
 
