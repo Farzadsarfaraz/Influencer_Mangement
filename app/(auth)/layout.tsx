@@ -2,7 +2,7 @@ import { CheckCircle2 } from "lucide-react";
 
 import { MorphingWordmark } from "@/components/shared/morphing-wordmark";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { WovenBackground } from "@/components/shared/woven-background";
+import { WovenBackgroundLazy } from "@/components/shared/woven-background-lazy";
 
 const HIGHLIGHTS = [
   "Brief to payout in one workspace",
@@ -22,7 +22,7 @@ export default function AuthLayout({
       </div>
 
       <div className="bg-primary text-primary-foreground relative hidden overflow-hidden md:flex md:flex-col md:justify-between md:p-8 lg:p-12">
-        <WovenBackground />
+        <WovenBackgroundLazy />
         <MorphingWordmark />
 
         <div className="relative z-10 max-w-md space-y-8">
